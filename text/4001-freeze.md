@@ -63,8 +63,8 @@ fn serialize_order_unsound(order: &Order) -> &[u8] {
 ```
 
 However, this is unsafe, because `Order` contains padding bytes which are not
-initialized, and it is an immediate UB to create a `&[u8]` that points to
-uninitialized bytes.
+initialized, and it is unsafe to create a `&[u8]` that points to uninitialized
+bytes.
 
 We can use `MaybeUninit<u8>` to make this sound:
 
