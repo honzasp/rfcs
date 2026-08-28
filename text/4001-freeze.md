@@ -451,8 +451,13 @@ To be determined.
 #### Const eval/Miri
 
 The `freeze` intrinsic also needs to be implemented for constant evaluation and
-inside Miri. It might be useful to replace the uninitialized bytes with
-pseudo-random values, to help uncover bugs in programs that use `freeze()`.
+inside Miri. During constant evaluation, the frozen uninitialized bytes need to
+be replaced with deterministic values (e.g. all zeros).
+
+However, in Miri at runtime it might be useful to replace the uninitialized
+bytes with pseudo-random values, to help uncover bugs in programs that use
+`freeze()` and incorrectly make too strong assumptions about the frozen
+uninitialized bytes, for example if they assume they are all zeros.
 
 ## Drawbacks
 [drawbacks]: #drawbacks
