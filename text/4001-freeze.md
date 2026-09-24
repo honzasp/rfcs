@@ -367,41 +367,16 @@ about definedness and pointer provenance would not be preserved.
 ##### Scalars: `freeze` operation
 
 For small types, which are represented as a single LLVM scalar or a pair of
-scalars, the `freeze()` intrinsic can translate to a `freeze` instruction:
-
-```llvm
-; %input is a value of the byte type, representing the `input: MaybeUninit<T>`
-%output = freeze bX %input
-```
-
-where `bX` refers to the byte type of corresponding width (e.g. `b32` for a
-4-byte value).
+scalars, the `freeze()` intrinsic can translate to a `freeze` instruction on the
+LLVM byte type.
 
 ##### Non-scalars: freezing `memcpy`
 
 However, values of non-scalar types, such as `MaybeUninit<[u8; 1000]>` are not
 represented as values in LLVM registers, but are stored in memory and passed as
 pointers, even if they are passed by-value in Rust. To implement the `freeze()`
-intrinsic for these types, we have to split the value into smaller pieces that
-we can load from the input into registers, apply the `freeze` operation, and
-store into the output.
-
-One way to do it is to simply use the `load` and `store` instructions with an
-appropriately sized byte type, and let LLVM split it into a sequence of smaller
-loads and stores that the CPU can actually execute:
-
-```llvm
-; %input_ptr is a pointer from which we read the input
-; %output_ptr is a pointer into which we write the output
-%input = load bX, ptr %input_ptr
-%output = freeze bX %input
-store bX %output, %output_ptr
-```
-
-The problem with this approach is that the number of instructions that it
-generates is proportional to the size of the type. For types that are larger
-than some threshold, we need to emit a loop that does a sequence of `load`,
-`freeze` and `store` operations for each register-sized chunk.
+intrinsic for these types, we need an operation that reads bytes from the source
+memory location, freezes them, and writes them into the target memory location.
 
 This is very similar to the `memcpy` operation, for which LLVM has a dedicated
 intrinsic, `llvm.memcpy`. The best long-term solution is to add a variant of
@@ -416,8 +391,9 @@ On the hardware level, "freezing `memcpy`" works exactly the same as normal
 `memcpy`, so it may make more sense to go with the second option.
 
 However, until LLVM adds support for this intrinsic, the compiler can generate a
-call to a function that performs the copy, or a call to `memcpy()` (if LLVM can
-be persuaded not to treat this as equivalent to the `llvm.memcpy` intrinsic).
+call to a function that performs the freezing copy, or a call to `memcpy()` (if
+LLVM can be persuaded not to treat this as equivalent to the `llvm.memcpy`
+intrinsic).
 
 ##### LLVM 22
 
