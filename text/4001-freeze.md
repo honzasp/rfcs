@@ -682,6 +682,7 @@ mechanisms), and the "story" of this inline assembly can be a loop that
 reads, `freeze`-s and writes every byte in the range.
 
 ### Naming: `freeze` vs `frozen`
+[freeze-vs-frozen]: #freeze-vs-frozen
 
 The method name `MaybeUninit<T>::freeze()` can look like it mutates the
 receiver, so a better name might be `MaybeUninit<T>::frozen()`, which makes it
@@ -795,6 +796,8 @@ Other related discussions were:
 
 - Are the security holes opened by `freeze()` worth the benefits?
 - How to implement freezing `memcpy` to freeze non-scalar values?
+- Should the Rust function that exposes the freeze operation be named `freeze()`
+  or `frozen()`? (see also the [discussion above][freeze-vs-frozen])
 
 ## Future possibilities
 [future-possibilities]: #future-possibilities
