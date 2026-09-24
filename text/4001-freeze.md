@@ -798,6 +798,8 @@ Other related discussions were:
 - How to implement freezing `memcpy` to freeze non-scalar values?
 - Should the Rust function that exposes the freeze operation be named `freeze()`
   or `frozen()`? (see also the [discussion above][freeze-vs-frozen])
+- Is it possible to declare some misuses of freeze, such as leaking of secrets,
+  to be Erroneous Behavior, which could be detected by tools like Valgrind?
 
 ## Future possibilities
 [future-possibilities]: #future-possibilities
