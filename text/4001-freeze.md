@@ -293,6 +293,20 @@ for the inline assembly can be that we check that an element is present by a
 linear scan of the dense array, without accessing the sparse, possibly
 uninitialized array.
 
+## Additional use cases
+
+Several additional use cases for freeze have been proposed, such as:
+
+- Exposing the [`llvm.speculative.load`][llvm-speculative-load] LLVM intrinsic
+  to Rust, which may produce LLVM `undef` values
+- Atomics on arbitrary small types that can contain padding
+- Atomic bytewise memcpy to implement seqlocks
+- A ["story"][ralfj-inline-asm] for inline assembly that performs [in-place
+  freeze][in-place-freeze], when the programmer can ensure that it is safe (see
+  the in-place freeze discussion later for more details)
+
+[llvm-speculative-load]: https://github.com/llvm/llvm-project/pull/179642
+
 ## Detailed design
 [detailed-design]: #detailed-design
 
@@ -590,6 +604,7 @@ and on the LLVM level), so the pointers or references could not be dereferenced
 even if the caller knows that they were initialized in the input.
 
 ### In-place freeze
+[in-place-freeze]: #in-place-freeze
 
 Finally, there have been many proposals for an in-place freeze operation, which
 replaces any possibly uninitialized bytes in memory with arbitrary but
